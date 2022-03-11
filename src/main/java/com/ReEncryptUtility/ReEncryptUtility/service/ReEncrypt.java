@@ -5,12 +5,16 @@ import com.ReEncryptUtility.ReEncryptUtility.dto.CryptoManagerResponseDTO;
 import com.ReEncryptUtility.ReEncryptUtility.dto.RequestWrapper;
 import com.ReEncryptUtility.ReEncryptUtility.dto.ResponseWrapper;
 import com.ReEncryptUtility.ReEncryptUtility.entity.DemographicEntity;
-import com.ReEncryptUtility.ReEncryptUtility.repository.ReEncrptyRepository;
+import com.ReEncryptUtility.ReEncryptUtility.entity.DocumentEntity;
+import com.ReEncryptUtility.ReEncryptUtility.repository.DemographicRepository;
+import com.ReEncryptUtility.ReEncryptUtility.repository.DocumentRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.mosip.commons.khazana.spi.ObjectStoreAdapter;
 import io.mosip.kernel.core.util.HMACUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -20,6 +24,7 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -56,7 +61,14 @@ public class ReEncrypt {
     private ObjectMapper mapper;
 
     @Autowired
-    private ReEncrptyRepository reEncryptRepository;
+    private DemographicRepository reEncryptRepository;
+
+
+    @Autowired
+    private ObjectStoreAdapter objectStore;
+
+    @Value("${mosip.kernel.objectstore.account-name}")
+    private String objectStoreAccountName;
 
     String token = "";
 
@@ -64,7 +76,7 @@ public class ReEncrypt {
 
     public int successFullRow;
 
-    public ReEncrypt(ObjectMapper mapper, ReEncrptyRepository reEncryptRepository) {
+    public ReEncrypt(ObjectMapper mapper, DemographicRepository reEncryptRepository) {
         this.mapper = mapper;
         this.reEncryptRepository = reEncryptRepository;
     }
@@ -152,17 +164,46 @@ public class ReEncrypt {
     }
 
     @Autowired
-    private ReEncrptyRepository reEncrptyRepository;
+    private DemographicRepository demographicRepository;
+
+    @Autowired
+    private DocumentRepository documentRepository;
 
     public void start() throws Exception {
 
-        List<DemographicEntity> applicantDemographic = reEncrptyRepository.findAll();
-        reEncryptData(applicantDemographic);
+        //List<DemographicEntity> applicantDemographic = demographicRepository.findAll();
+        //reEncryptData(applicantDemographic);
+        List<DocumentEntity> documentEntityList = documentRepository.findAll();
+        reEncryptDocument(documentEntityList);
+
+    }
+
+    private void reEncryptDocument(List<DocumentEntity> documentEntityList) {
+        logger.info("Total rows:-" + documentEntityList.size());
+        int count=0;
+//        for (DocumentEntity documentEntity : documentEntityList) {
+//            if (count++ >5){
+//                break;
+//            }
+//            logger.info("DocumentEntity:-" + documentEntity.getDocumentId());
+//            logger.info("DocumentEntity:-" + documentEntity.getDocId());
+//            logger.info("DocumentEntity:-" + documentEntity.getDocHash());
+//        }
+        documentEntityList = documentRepository.findByDemographicEntityPreRegistrationId("54034205148172");
+        logger.info("spcific prereg id:"+ documentEntityList.size());
+        for (DocumentEntity documentEntity : documentEntityList) {
+            System.out.println(documentEntity.getDemographicEntity().getPreRegistrationId());
+            String key = documentEntity.getDocCatCode() + "_" + documentEntity.getDocumentId();
+            InputStream sourcefile = objectStore.getObject(objectStoreAccountName,
+                    documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key);
+        }
     }
 
     private void reEncryptData(List<DemographicEntity> applicantDemographic) throws Exception {
         int count = 0;
         for (DemographicEntity demographicEntity : applicantDemographic) {
+//            if (count <5)
+//                break;
             logger.info("pre registration id: " + demographicEntity.getPreRegistrationId());
             logger.info("encrypted : " + new String(demographicEntity.getApplicantDetailJson()));
             if (demographicEntity.getApplicantDetailJson() != null) {
@@ -173,11 +214,11 @@ public class ReEncrypt {
                 logger.info("decrypted: " + new String(decryptedBytes));
                 byte[] ReEncrypted = encrypt(decryptedBytes, LocalDateTime.now(), encryptBaseUrl);
                 logger.info("ReEncrypted: " + new String(ReEncrypted));
-                DemographicEntity demographicEntity1 = reEncrptyRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId());
+                DemographicEntity demographicEntity1 = demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId());
                 demographicEntity1.setApplicantDetailJson(ReEncrypted);
                 demographicEntity1.setEncryptedDateTime(LocalDateTime.now());
                 demographicEntity1.setDemogDetailHash(hashUtill(ReEncrypted));
-                reEncrptyRepository.save(demographicEntity1);
+                demographicRepository.save(demographicEntity1);
             }
         }
         logger.info("Total rows "+ applicantDemographic.size());
