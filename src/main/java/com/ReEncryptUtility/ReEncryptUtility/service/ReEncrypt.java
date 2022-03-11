@@ -21,7 +21,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -107,7 +106,7 @@ public class ReEncrypt {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<RequestWrapper<CryptoManagerRequestDTO>> request = new HttpEntity<>(requestKernel, headers);
-            //logger.info("In decrypt method of CryptoUtil service cryptoResourceUrl: " + cryptoResourceUrl + "/decrypt");
+            logger.info("In decrypt method of CryptoUtil service cryptoResourceUrl: " + cryptoResourceUrl + "/decrypt");
             response = restTemplate.exchange(cryptoResourceUrl + "/decrypt", HttpMethod.POST, request,
                     new ParameterizedTypeReference<ResponseWrapper<CryptoManagerResponseDTO>>() {
                     });
@@ -164,25 +163,25 @@ public class ReEncrypt {
     private void reEncryptData(List<DemographicEntity> applicantDemographic) throws Exception {
         int count = 0;
         for (DemographicEntity demographicEntity : applicantDemographic) {
-//            if (count++ > 5)
-//                break;
-            System.out.println("pre registration id: " + demographicEntity.getPreRegistrationId());
-            System.out.println("encrypted : " + new String(demographicEntity.getApplicantDetailJson()));
+            logger.info("pre registration id: " + demographicEntity.getPreRegistrationId());
+            logger.info("encrypted : " + new String(demographicEntity.getApplicantDetailJson()));
             if (demographicEntity.getApplicantDetailJson() != null) {
                 byte[] decryptedBytes = decrypt(demographicEntity.getApplicantDetailJson(), LocalDateTime.now(), decryptBaseUrl);
                 if(decryptedBytes == null)
                     continue;
-                System.out.println("decrypted: " + new String(decryptedBytes));
+                count++;
+                logger.info("decrypted: " + new String(decryptedBytes));
                 byte[] ReEncrypted = encrypt(decryptedBytes, LocalDateTime.now(), encryptBaseUrl);
-                System.out.println("ReEncrypted: " + new String(ReEncrypted));
+                logger.info("ReEncrypted: " + new String(ReEncrypted));
                 DemographicEntity demographicEntity1 = reEncrptyRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId());
                 demographicEntity1.setApplicantDetailJson(ReEncrypted);
                 demographicEntity1.setEncryptedDateTime(LocalDateTime.now());
                 demographicEntity1.setDemogDetailHash(hashUtill(ReEncrypted));
                 reEncrptyRepository.save(demographicEntity1);
-                System.out.println(demographicEntity1.getEncryptedDateTime());
             }
         }
+        logger.info("Total rows "+ applicantDemographic.size());
+        logger.info("Total rows encrypted "+ count);
     }
 }
 
