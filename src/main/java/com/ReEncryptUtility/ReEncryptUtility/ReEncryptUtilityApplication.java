@@ -6,11 +6,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.web.client.RestTemplate;
 
-@SpringBootApplication(scanBasePackages = {"com.ReEncryptUtility.ReEncryptUtility.*" })
+@SpringBootApplication
+@ComponentScan(basePackages={ "io.mosip.commons.khazana.*" ,"com.ReEncryptUtility.ReEncryptUtility.*"}, excludeFilters = {
+        @ComponentScan.Filter(type = FilterType.ASPECTJ,
+                pattern = {
+                        "io.mosip.commons.khazana.impl.PosixAdapter",
+                        "io.mosip.commons.khazana.util.*"
+                }) })
 public class ReEncryptUtilityApplication implements CommandLineRunner {
 
     Logger logger = org.slf4j.LoggerFactory.getLogger(ReEncryptUtilityApplication.class);

@@ -64,6 +64,7 @@ public class ReEncrypt {
     private DemographicRepository reEncryptRepository;
 
 
+    @Qualifier("S3Adapter")
     @Autowired
     private ObjectStoreAdapter objectStore;
 
