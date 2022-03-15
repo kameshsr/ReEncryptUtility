@@ -6,12 +6,16 @@ import com.ReEncryptUtility.ReEncryptUtility.dto.RequestWrapper;
 import com.ReEncryptUtility.ReEncryptUtility.dto.ResponseWrapper;
 import com.ReEncryptUtility.ReEncryptUtility.entity.DemographicEntity;
 import com.ReEncryptUtility.ReEncryptUtility.entity.DocumentEntity;
+import com.ReEncryptUtility.ReEncryptUtility.exception.BaseException;
 import com.ReEncryptUtility.ReEncryptUtility.repository.DemographicRepository;
 import com.ReEncryptUtility.ReEncryptUtility.repository.DocumentRepository;
+import com.amazonaws.services.codedeploy.model.ErrorCode;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.util.IOUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.mosip.commons.khazana.spi.ObjectStoreAdapter;
+import io.mosip.kernel.core.fsadapter.exception.FSAdapterException;
 import io.mosip.kernel.core.util.HMACUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +29,13 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -181,7 +188,7 @@ public class ReEncrypt {
 
     }
 
-    private void reEncryptDocument(List<DocumentEntity> documentEntityList) throws IOException {
+    private void reEncryptDocument(List<DocumentEntity> documentEntityList) throws AmazonS3Exception, BaseException {
         logger.info("Total rows:-" + documentEntityList.size());
         int count=0;
 //        for (DocumentEntity documentEntity : documentEntityList) {
@@ -190,21 +197,35 @@ public class ReEncrypt {
 //            }
 //            logger.info("DocumentEntity:-" + documentEntity.getDocumentId());
 //            logger.info("DocumentEntity:-" + documentEntity.getDocId());
-//            logger.info("DocumentEntity:-" + documentEntity.getDocHash());
+//            logger.info("DocumentEntity:-" + documentEntity.getDocHash());21458271259645
 //        }
-        documentEntityList = documentRepository.findByDemographicEntityPreRegistrationId("21458271259645");
+        documentEntityList = documentRepository.findByDemographicEntityPreRegistrationId("21970976483745");
+        System.out.println("Total rows found in prereg:-" + documentEntityList.size());
+        if (documentEntityList != null && !documentEntityList.isEmpty()) {
         logger.info("spcific prereg id:"+ documentEntityList.size());
         for (DocumentEntity documentEntity : documentEntityList) {
             System.out.println(documentEntity.getDemographicEntity().getPreRegistrationId());
             String key = documentEntity.getDocCatCode() + "_" + documentEntity.getDocumentId();
-            InputStream sourcefile = objectStore.getObject("objectStoreAccountName",
-                    documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key);
 
-            byte[] bytes = IOUtils.toByteArray(sourcefile);
-            System.out.println("bytes:\n"+new String(bytes));
+            try {
+                InputStream sourcefile = objectStore.getObject("objectStoreAccountName",
+                        documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key);
+                if(sourcefile != null) {
+                    System.out.println("sourcefile not null");
+                }
+                byte[] bytes = IOUtils.toByteArray(sourcefile);
+                System.out.println("bytes:\n" + new String(bytes));
+            } catch (AmazonS3Exception | FSAdapterException | IOException  e) {
+                //e.printStackTrace();
+                System.out.println("Exception:- bucket not found");
+                //throw new BaseException();
+                throw new BaseException();
+            }
+            System.out.println("DocumentEntity:-" + documentEntity.getDocumentId());
+        }
+
         }
     }
-
     private void reEncryptData(List<DemographicEntity> applicantDemographic) throws Exception {
         int count = 0;
         for (DemographicEntity demographicEntity : applicantDemographic) {
