@@ -199,7 +199,7 @@ public class ReEncrypt {
 //            logger.info("DocumentEntity:-" + documentEntity.getDocId());
 //            logger.info("DocumentEntity:-" + documentEntity.getDocHash());21458271259645
 //        }
-        documentEntityList = documentRepository.findByDemographicEntityPreRegistrationId("21970976483745");
+        documentEntityList = documentRepository.findByDemographicEntityPreRegistrationId("21596075845284");
         System.out.println("Total rows found in prereg:-" + documentEntityList.size());
         if (documentEntityList != null && !documentEntityList.isEmpty()) {
         logger.info("spcific prereg id:"+ documentEntityList.size());
@@ -207,7 +207,8 @@ public class ReEncrypt {
             System.out.println(documentEntity.getDemographicEntity().getPreRegistrationId());
             String key = documentEntity.getDocCatCode() + "_" + documentEntity.getDocumentId();
             try {
-                if(objectStore.exists("objectstoreAccountName",documentEntity.getDocumentId(), null, null, key)==false){
+                if(objectStore.exists("objectStoreAccountName",documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key)==false){
+                    System.out.println("key not found in objectstore");
                     continue;
                 }
                 InputStream sourcefile = objectStore.getObject("objectStoreAccountName",
