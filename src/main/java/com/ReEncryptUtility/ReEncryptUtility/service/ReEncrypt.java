@@ -8,6 +8,7 @@ import com.ReEncryptUtility.ReEncryptUtility.entity.DemographicEntity;
 import com.ReEncryptUtility.ReEncryptUtility.entity.DocumentEntity;
 import com.ReEncryptUtility.ReEncryptUtility.repository.DemographicRepository;
 import com.ReEncryptUtility.ReEncryptUtility.repository.DocumentRepository;
+import com.amazonaws.util.IOUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.mosip.commons.khazana.spi.ObjectStoreAdapter;
@@ -24,6 +25,7 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -179,7 +181,7 @@ public class ReEncrypt {
 
     }
 
-    private void reEncryptDocument(List<DocumentEntity> documentEntityList) {
+    private void reEncryptDocument(List<DocumentEntity> documentEntityList) throws IOException {
         logger.info("Total rows:-" + documentEntityList.size());
         int count=0;
 //        for (DocumentEntity documentEntity : documentEntityList) {
@@ -190,13 +192,16 @@ public class ReEncrypt {
 //            logger.info("DocumentEntity:-" + documentEntity.getDocId());
 //            logger.info("DocumentEntity:-" + documentEntity.getDocHash());
 //        }
-        documentEntityList = documentRepository.findByDemographicEntityPreRegistrationId("54034205148172");
+        documentEntityList = documentRepository.findByDemographicEntityPreRegistrationId("21458271259645");
         logger.info("spcific prereg id:"+ documentEntityList.size());
         for (DocumentEntity documentEntity : documentEntityList) {
             System.out.println(documentEntity.getDemographicEntity().getPreRegistrationId());
             String key = documentEntity.getDocCatCode() + "_" + documentEntity.getDocumentId();
-            InputStream sourcefile = objectStore.getObject(objectStoreAccountName,
+            InputStream sourcefile = objectStore.getObject("objectStoreAccountName",
                     documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key);
+
+            byte[] bytes = IOUtils.toByteArray(sourcefile);
+            System.out.println("bytes:\n"+new String(bytes));
         }
     }
 
