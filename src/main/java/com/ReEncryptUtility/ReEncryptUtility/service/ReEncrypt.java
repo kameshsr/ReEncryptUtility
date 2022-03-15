@@ -188,7 +188,7 @@ public class ReEncrypt {
 
     }
 
-    private void reEncryptDocument(List<DocumentEntity> documentEntityList) throws AmazonS3Exception, BaseException {
+    private void reEncryptDocument(List<DocumentEntity> documentEntityList) throws BaseException {
         logger.info("Total rows:-" + documentEntityList.size());
         int count=0;
 //        for (DocumentEntity documentEntity : documentEntityList) {
@@ -206,8 +206,10 @@ public class ReEncrypt {
         for (DocumentEntity documentEntity : documentEntityList) {
             System.out.println(documentEntity.getDemographicEntity().getPreRegistrationId());
             String key = documentEntity.getDocCatCode() + "_" + documentEntity.getDocumentId();
-
             try {
+                if(objectStore.exists("objectstoreAccountName",documentEntity.getDocumentId(), null, null, key)==false){
+                    continue;
+                }
                 InputStream sourcefile = objectStore.getObject("objectStoreAccountName",
                         documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key);
                 if(sourcefile != null) {
@@ -215,10 +217,10 @@ public class ReEncrypt {
                 }
                 byte[] bytes = IOUtils.toByteArray(sourcefile);
                 System.out.println("bytes:\n" + new String(bytes));
-            } catch (AmazonS3Exception | FSAdapterException | IOException  e) {
+            } catch (AmazonS3Exception | FSAdapterException | IOException e) {
                 //e.printStackTrace();
                 System.out.println("Exception:- bucket not found");
-                //throw new BaseException();
+
                 throw new BaseException();
             }
             System.out.println("DocumentEntity:-" + documentEntity.getDocumentId());
