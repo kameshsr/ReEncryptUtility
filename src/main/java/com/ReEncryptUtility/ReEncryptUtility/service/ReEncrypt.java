@@ -221,10 +221,16 @@ public class ReEncrypt {
                             System.out.println("sourcefile not null");
                             byte[] bytes = IOUtils.toByteArray(sourcefile);
                             byte[] decryptedBytes =  decrypt(bytes, LocalDateTime.now(), decryptBaseUrl);
+                            if (decryptedBytes == null) {
+                                System.out.println("decryptedBytes is null");
+                                continue;
+                            }
                             byte[] reEncryptedBytes = encrypt(decryptedBytes, LocalDateTime.now(), encryptBaseUrl);
                             System.out.println("bytes:\n" + bytes);
                             System.out.println("decryptedBytes:\n" + decryptedBytes);
-                            System.out.println("reEncryptedBytes:\n" + new String(reEncryptedBytes));
+                            System.out.println("reEncryptedBytes:\n" + (reEncryptedBytes));
+
+                            objectStore.putObject("objectStoreAccountName", documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key, new ByteArrayInputStream(reEncryptedBytes));
                         }
 
                     } catch (AmazonS3Exception | FSAdapterException | IOException e) {
