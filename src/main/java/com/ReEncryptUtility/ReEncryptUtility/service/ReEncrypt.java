@@ -177,8 +177,8 @@ public class ReEncrypt {
 
     public void start() throws Exception {
 
-//        List<DemographicEntity> applicantDemographic = demographicRepository.findAll();
-//        reEncryptData(applicantDemographic);
+        List<DemographicEntity> applicantDemographic = demographicRepository.findAll();
+        reEncryptData(applicantDemographic);
         List<DocumentEntity> documentEntityList = documentRepository.findAll();
         reEncryptDocument(documentEntityList);
 
