@@ -177,8 +177,8 @@ public class ReEncrypt {
 
     public void start() throws Exception {
 
-        List<DemographicEntity> applicantDemographic = demographicRepository.findAll();
-        reEncryptData(applicantDemographic);
+//        List<DemographicEntity> applicantDemographic = demographicRepository.findAll();
+//        reEncryptData(applicantDemographic);
         List<DocumentEntity> documentEntityList = documentRepository.findAll();
         reEncryptDocument(documentEntityList);
 
@@ -219,6 +219,14 @@ public class ReEncrypt {
                             logger.info("reEncryptedBytes:\n" + (reEncryptedBytes));
 
                             objectStore.putObject("objectStoreAccountName", documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key, new ByteArrayInputStream(reEncryptedBytes));
+
+                            List<DocumentEntity> currentDocumentEntityList =  documentRepository.findByDemographicEntityPreRegistrationId(documentEntity.getDemographicEntity().getPreRegistrationId());
+                            for (DocumentEntity currentDocumentEntity : currentDocumentEntityList) {
+                                currentDocumentEntity.setDocHash(hashUtill(reEncryptedBytes));
+                                currentDocumentEntity.setEncryptedDateTime(LocalDateTime.now());
+                                demographicRepository.save(currentDocumentEntity.getDemographicEntity());
+                                documentRepository.save(currentDocumentEntity);
+                            }
                         }
 
                     } catch (AmazonS3Exception | FSAdapterException | IOException e) {
