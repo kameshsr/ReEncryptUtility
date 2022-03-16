@@ -190,7 +190,8 @@ public class ReEncrypt {
 
     private void reEncryptDocument(List<DocumentEntity> documentEntityList) throws BaseException {
         logger.info("Total rows:-" + documentEntityList.size());
-        int count=0;
+        int objectStoreFoundCounter=0;
+
 //        for (DocumentEntity documentEntity : documentEntityList) {
 //            if (count++ >5){
 //                break;
@@ -199,35 +200,48 @@ public class ReEncrypt {
 //            logger.info("DocumentEntity:-" + documentEntity.getDocId());
 //            logger.info("DocumentEntity:-" + documentEntity.getDocHash());21458271259645
 //        }
-        documentEntityList = documentRepository.findByDemographicEntityPreRegistrationId("21596075845284");
-        System.out.println("Total rows found in prereg:-" + documentEntityList.size());
-        if (documentEntityList != null && !documentEntityList.isEmpty()) {
-        logger.info("spcific prereg id:"+ documentEntityList.size());
-        for (DocumentEntity documentEntity : documentEntityList) {
-            System.out.println(documentEntity.getDemographicEntity().getPreRegistrationId());
-            String key = documentEntity.getDocCatCode() + "_" + documentEntity.getDocumentId();
-            try {
-                if(objectStore.exists("objectStoreAccountName",documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key)==false){
-                    System.out.println("key not found in objectstore");
-                    continue;
-                }
-                InputStream sourcefile = objectStore.getObject("objectStoreAccountName",
-                        documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key);
-                if(sourcefile != null) {
-                    System.out.println("sourcefile not null");
-                }
-                byte[] bytes = IOUtils.toByteArray(sourcefile);
-                System.out.println("bytes:\n" + new String(bytes));
-            } catch (AmazonS3Exception | FSAdapterException | IOException e) {
-                //e.printStackTrace();
-                System.out.println("Exception:- bucket not found");
+        for (DocumentEntity documentEntities : documentEntityList) {
+            System.out.println("pre-registration-id:-" + documentEntities.getDemographicEntity().getPreRegistrationId());
+            documentEntityList = documentRepository.findByDemographicEntityPreRegistrationId(documentEntities.getDemographicEntity().getPreRegistrationId());
+            System.out.println("Total rows found in prereg:-" + documentEntityList.size());
+            if (documentEntityList != null && !documentEntityList.isEmpty()) {
+                logger.info("spcific prereg id:" + documentEntityList.size());
+                for (DocumentEntity documentEntity : documentEntityList) {
+                    System.out.println(documentEntity.getDemographicEntity().getPreRegistrationId());
+                    String key = documentEntity.getDocCatCode() + "_" + documentEntity.getDocumentId();
+                    try {
+                        if (objectStore.exists("objectStoreAccountName", documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key) == false) {
+                            System.out.println("key not found in objectstore");
+                            continue;
+                        }
+                        InputStream sourcefile = objectStore.getObject("objectStoreAccountName",
+                                documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key);
+                        if (sourcefile != null) {
+                            objectStoreFoundCounter++;
+                            System.out.println("sourcefile not null");
+                            byte[] bytes = IOUtils.toByteArray(sourcefile);
+                            byte[] decryptedBytes =  decrypt(bytes, LocalDateTime.now(), decryptBaseUrl);
+                            byte[] reEncryptedBytes = encrypt(decryptedBytes, LocalDateTime.now(), encryptBaseUrl);
+                            System.out.println("bytes:\n" + bytes);
+                            System.out.println("decryptedBytes:\n" + decryptedBytes);
+                            System.out.println("reEncryptedBytes:\n" + new String(reEncryptedBytes));
+                        }
 
-                throw new BaseException();
+                    } catch (AmazonS3Exception | FSAdapterException | IOException e) {
+                        //e.printStackTrace();
+                        System.out.println("Exception:- bucket not found");
+
+                        throw new BaseException();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println("DocumentEntity:-" + documentEntity.getDocumentId());
+                }
+
             }
-            System.out.println("DocumentEntity:-" + documentEntity.getDocumentId());
         }
-
-        }
+        System.out.println("Total rows:-" + documentEntityList.size());
+        System.out.println("Number of rows fetched by object store:-" + objectStoreFoundCounter);
     }
     private void reEncryptData(List<DemographicEntity> applicantDemographic) throws Exception {
         int count = 0;
