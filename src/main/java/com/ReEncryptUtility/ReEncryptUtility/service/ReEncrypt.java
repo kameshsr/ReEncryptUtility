@@ -176,7 +176,7 @@ public class ReEncrypt {
     private DocumentRepository documentRepository;
 
     public void start() throws Exception {
-
+        DatabaseThreadContext.setCurrentDatabase(Database.PRIMARY);
         List<DemographicEntity> applicantDemographic = demographicRepository.findAll();
         reEncryptData(applicantDemographic);
         List<DocumentEntity> documentEntityList = documentRepository.findAll();
