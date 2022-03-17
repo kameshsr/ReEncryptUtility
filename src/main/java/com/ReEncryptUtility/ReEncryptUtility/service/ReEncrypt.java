@@ -76,7 +76,7 @@ public class ReEncrypt {
     @Value("${mosip.kernel.objectstore.account-name}")
     private String objectStoreAccountName;
 
-    @Value("${isNewDatabase")
+    @Value("${isNewDatabase}")
     private String isNewDatabase;
 
     String token = "";
@@ -180,6 +180,7 @@ public class ReEncrypt {
 
     public void start() throws Exception {
         DatabaseThreadContext.setCurrentDatabase(Database.PRIMARY);
+        logger.info("sessionId", "idType", "id", "In start method of CryptoUtil service ");
 
         List<DemographicEntity> applicantDemographic = demographicRepository.findAll();
         reEncryptData(applicantDemographic);
@@ -251,7 +252,7 @@ public class ReEncrypt {
     private void reEncryptData(List<DemographicEntity> applicantDemographic) throws Exception {
         int count = 0;
         for (DemographicEntity demographicEntity : applicantDemographic) {
-            if (count >5)
+            if (count >6)
                 break;
             logger.info("pre registration id: " + demographicEntity.getPreRegistrationId());
             logger.info("encrypted : " + new String(demographicEntity.getApplicantDetailJson()));
@@ -265,7 +266,8 @@ public class ReEncrypt {
                 logger.info("ReEncrypted: " + new String(ReEncrypted));
 
 
-                if(isNewDatabase=="true"){
+                if(isNewDatabase.equalsIgnoreCase("true")) {
+                    System.out.println("I am in new database");
                     DemographicEntity demographicEntity1 = demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId());
                     demographicEntity1.setApplicantDetailJson(ReEncrypted);
                     demographicEntity1.setEncryptedDateTime(LocalDateTime.now());
@@ -275,6 +277,7 @@ public class ReEncrypt {
                     DatabaseThreadContext.setCurrentDatabase(Database.PRIMARY);
                 }
                 else {
+                    System.out.println("i am in else false condition");
                     DemographicEntity demographicEntity1 = demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId());
                     demographicEntity1.setApplicantDetailJson(ReEncrypted);
                     demographicEntity1.setEncryptedDateTime(LocalDateTime.now());
