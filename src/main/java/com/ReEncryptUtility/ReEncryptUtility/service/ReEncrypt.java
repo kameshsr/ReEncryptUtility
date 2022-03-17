@@ -76,6 +76,9 @@ public class ReEncrypt {
     @Value("${mosip.kernel.objectstore.account-name}")
     private String objectStoreAccountName;
 
+    @Value("${isNewDatabase")
+    private String isNewDatabase;
+
     String token = "";
 
     public int row;
@@ -177,10 +180,11 @@ public class ReEncrypt {
 
     public void start() throws Exception {
         DatabaseThreadContext.setCurrentDatabase(Database.PRIMARY);
+
         List<DemographicEntity> applicantDemographic = demographicRepository.findAll();
         reEncryptData(applicantDemographic);
-        List<DocumentEntity> documentEntityList = documentRepository.findAll();
-        reEncryptDocument(documentEntityList);
+//        List<DocumentEntity> documentEntityList = documentRepository.findAll();
+//        reEncryptDocument(documentEntityList);
 
     }
 
@@ -247,8 +251,8 @@ public class ReEncrypt {
     private void reEncryptData(List<DemographicEntity> applicantDemographic) throws Exception {
         int count = 0;
         for (DemographicEntity demographicEntity : applicantDemographic) {
-//            if (count <5)
-//                break;
+            if (count >5)
+                break;
             logger.info("pre registration id: " + demographicEntity.getPreRegistrationId());
             logger.info("encrypted : " + new String(demographicEntity.getApplicantDetailJson()));
             if (demographicEntity.getApplicantDetailJson() != null) {
@@ -259,11 +263,25 @@ public class ReEncrypt {
                 logger.info("decrypted: " + new String(decryptedBytes));
                 byte[] ReEncrypted = encrypt(decryptedBytes, LocalDateTime.now(), encryptBaseUrl);
                 logger.info("ReEncrypted: " + new String(ReEncrypted));
-                DemographicEntity demographicEntity1 = demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId());
-                demographicEntity1.setApplicantDetailJson(ReEncrypted);
-                demographicEntity1.setEncryptedDateTime(LocalDateTime.now());
-                demographicEntity1.setDemogDetailHash(hashUtill(ReEncrypted));
-                demographicRepository.save(demographicEntity1);
+
+
+                if(isNewDatabase=="true"){
+                    DemographicEntity demographicEntity1 = demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId());
+                    demographicEntity1.setApplicantDetailJson(ReEncrypted);
+                    demographicEntity1.setEncryptedDateTime(LocalDateTime.now());
+                    demographicEntity1.setDemogDetailHash(hashUtill(ReEncrypted));
+                    DatabaseThreadContext.setCurrentDatabase(Database.SECONDARY);
+                    demographicRepository.save(demographicEntity1);
+                    DatabaseThreadContext.setCurrentDatabase(Database.PRIMARY);
+                }
+                else {
+                    DemographicEntity demographicEntity1 = demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId());
+                    demographicEntity1.setApplicantDetailJson(ReEncrypted);
+                    demographicEntity1.setEncryptedDateTime(LocalDateTime.now());
+                    demographicEntity1.setDemogDetailHash(hashUtill(ReEncrypted));
+                    demographicRepository.save(demographicEntity1);
+                }
+
             }
         }
         logger.info("Total rows "+ applicantDemographic.size());
