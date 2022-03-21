@@ -202,12 +202,31 @@ public class ReEncrypt {
         logger.info("sessionId", "idType", "id", "In InsertDataInNewDatabase method of CryptoUtil service ");
         DatabaseThreadContext.setCurrentDatabase(Database.SECONDARY);
         System.out.println("size of list"+demographicEntityList.size());
-        for(DemographicEntity demographicEntity : demographicEntityList) {
+        System.out.println("size of qa=upgrade"+demographicRepository.findAll().size());
 
-            System.out.println("demographicEntity prereg id : " + demographicEntity.getPreRegistrationId());
-            demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId());
-            demographicRepository.save(demographicEntity);
-        }
+       for(DemographicEntity demographicEntity : demographicEntityList) {
+
+           System.out.println("demographicEntity prereg id : " + demographicEntity.getPreRegistrationId());
+
+
+           System.out.println(demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId()));
+           if(demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId()) == null) {
+               DemographicEntity demographicEntity1 = new DemographicEntity();
+               demographicEntity1.setPreRegistrationId(demographicEntity.getPreRegistrationId());
+               demographicEntity1.setDemogDetailHash(demographicEntity.getDemogDetailHash());
+               demographicEntity1.setEncryptedDateTime(demographicEntity.getEncryptedDateTime());
+               demographicEntity1.setApplicantDetailJson(demographicEntity.getApplicantDetailJson());
+               demographicEntity1.setStatusCode(demographicEntity.getStatusCode());
+               demographicEntity1.setLangCode(demographicEntity.getLangCode());
+               demographicEntity1.setCrAppuserId(demographicEntity.getCrAppuserId());
+               demographicEntity1.setCreatedBy(demographicEntity.getCreatedBy());
+               demographicEntity1.setCreateDateTime(demographicEntity.getCreateDateTime());
+               demographicEntity1.setUpdatedBy(demographicEntity.getUpdatedBy());
+               demographicEntity1.setUpdateDateTime(demographicEntity.getUpdateDateTime());
+               demographicRepository.save(demographicEntity1);
+           }
+
+       }
     }
 
     private void reEncryptDocument(List<DocumentEntity> documentEntityList)  {
@@ -289,7 +308,6 @@ public class ReEncrypt {
 
                 if(isNewDatabase.equalsIgnoreCase("true")) {
                     System.out.println("I am in new database");
-                    //DemographicEntity demographicEntity1 = demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId());
                     demographicEntity.setApplicantDetailJson(ReEncrypted);
                     demographicEntity.setEncryptedDateTime(LocalDateTime.now());
                     demographicEntity.setDemogDetailHash(hashUtill(ReEncrypted));
@@ -302,7 +320,6 @@ public class ReEncrypt {
                     demographicEntity1.setApplicantDetailJson(ReEncrypted);
                     demographicEntity1.setEncryptedDateTime(LocalDateTime.now());
                     demographicEntity1.setDemogDetailHash(hashUtill(ReEncrypted));
-
                     demographicRepository.save(demographicEntity1);
                 }
 
