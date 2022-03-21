@@ -4,10 +4,10 @@ import com.ReEncryptUtility.ReEncryptUtility.dto.CryptoManagerRequestDTO;
 import com.ReEncryptUtility.ReEncryptUtility.dto.CryptoManagerResponseDTO;
 import com.ReEncryptUtility.ReEncryptUtility.dto.RequestWrapper;
 import com.ReEncryptUtility.ReEncryptUtility.dto.ResponseWrapper;
-import com.ReEncryptUtility.ReEncryptUtility.entity.DemographicEntity;
-import com.ReEncryptUtility.ReEncryptUtility.entity.DocumentEntity;
-import com.ReEncryptUtility.ReEncryptUtility.repository.DemographicRepository;
-import com.ReEncryptUtility.ReEncryptUtility.repository.DocumentRepository;
+import com.ReEncryptUtility.ReEncryptUtility.sourceDb.entity.DemographicEntity;
+import com.ReEncryptUtility.ReEncryptUtility.sourceDb.entity.DocumentEntity;
+import com.ReEncryptUtility.ReEncryptUtility.sourceDb.repository.DemographicRepository;
+import com.ReEncryptUtility.ReEncryptUtility.sourceDb.repository.DocumentRepository;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.util.IOUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -184,7 +184,7 @@ public class ReEncrypt {
 
 
     public void start() throws Exception {
-        DatabaseThreadContext.setCurrentDatabase(Database.PRIMARY);
+//        DatabaseThreadContext.setCurrentDatabase(Database.PRIMARY);
         logger.info("sessionId", "idType", "id", "In start method of CryptoUtil service ");
 
         List<DemographicEntity> applicantDemographic = demographicRepository.findAll();
@@ -200,12 +200,12 @@ public class ReEncrypt {
 
     private void InsertDataInNewDatabase() {
         logger.info("sessionId", "idType", "id", "In InsertDataInNewDatabase method of CryptoUtil service ");
-        DatabaseThreadContext.setCurrentDatabase(Database.SECONDARY);
+//        DatabaseThreadContext.setCurrentDatabase(Database.SECONDARY);
         System.out.println("size of list"+demographicEntityList.size());
         for(DemographicEntity demographicEntity : demographicEntityList) {
 
             System.out.println("demographicEntity prereg id : " + demographicEntity.getPreRegistrationId());
-            demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId());
+            //demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId());
             demographicRepository.save(demographicEntity);
         }
     }

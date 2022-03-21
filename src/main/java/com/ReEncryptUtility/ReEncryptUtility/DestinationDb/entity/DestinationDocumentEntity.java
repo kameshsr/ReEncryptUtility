@@ -2,7 +2,7 @@
  * Copyright
  * 
  */
-package com.ReEncryptUtility.ReEncryptUtility.entity;
+package com.ReEncryptUtility.ReEncryptUtility.DestinationDb.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,15 +22,15 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "applicant_document", schema = "prereg")
-public class DocumentEntity implements Serializable {
+@Table(name = "applicant_document1", schema = "prereg")
+public class DestinationDocumentEntity implements Serializable {
 
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1692781286748263575L;
 
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "prereg_id", nullable = false)
-	private DemographicEntity demographicEntity;
+	private DestinationDemographicEntity demographicEntity;
 
 	/**
 	 * Document Id
