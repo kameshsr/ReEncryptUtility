@@ -389,14 +389,17 @@ public class ReEncrypt {
                 logger.info("spcific prereg id:" + documentEntityList.size());
                 for (DocumentEntity documentEntity : documentEntityList) {
                     logger.info(documentEntity.getDemographicEntity().getPreRegistrationId());
-                    String key = documentEntity.getDocCatCode() + "_" + documentEntity.getDocumentId();
+                    //if (documentEntity.getDemographicEntity().getPreRegistrationId().equalsIgnoreCase("25704591254127") || documentEntity.getDemographicEntity().getPreRegistrationId().equalsIgnoreCase("21596075845285")) {
+                        String key = documentEntity.getDocCatCode() + "_" + documentEntity.getDocumentId();
                     try {
-                        if (objectStore.exists("objectStoreAccountName", documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key) == false) {
+                        if (objectStore.exists(objectStoreAccountName, documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key) == false) {
                             logger.info("key not found in objectstore");
                             continue;
                         }
-                        InputStream sourcefile = objectStore.getObject("objectStoreAccountName",
+                        logger.info("key  found in objectstore");
+                        InputStream sourcefile = objectStore.getObject(objectStoreAccountName,
                                 documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key);
+                        System.out.println("sourcefile" + sourcefile);
                         if (sourcefile != null) {
                             objectStoreFoundCounter++;
                             logger.info("sourcefile not null");
@@ -412,16 +415,14 @@ public class ReEncrypt {
                             logger.info("reEncryptedBytes:\n" + (reEncryptedBytes));
                             String folderName = documentEntity.getDemographicEntity().getPreRegistrationId();
                             if(isNewDatabase.equalsIgnoreCase("true")) {
-                                AmazonS3 connection = getConnection(objectStoreAccountName);
-                                if (!connection.doesBucketExistV2(objectStoreAccountName))
-                                    connection.createBucket(objectStoreAccountName);
+                                AmazonS3 connection = getConnection(folderName);
+                                if (!connection.doesBucketExistV2(folderName))
+                                    connection.createBucket(folderName);
                                 //createFolder(objectStoreAccountName, folderName, connection);
                                String fileName = folderName + SUFFIX + key;
 //  PutObjectRequest putObjectRequest = new PutObjectRequest(objectStoreAccountName,
 //                folderName + SUFFIX, emptyContent, metadata);
-                                connection.putObject(new PutObjectRequest(objectStoreAccountName, fileName, new ByteArrayInputStream(reEncryptedBytes), new ObjectMetadata()));
-//                                s3client.putObject(new PutObjectRequest("target-bucket", "/targetsystem-folder/"+fileName, file)
-//                                        .withCannedAcl(CannedAccessControlList.PublicRead));
+                                connection.putObject(folderName, key, new ByteArrayInputStream(reEncryptedBytes), null);
                             }
                             else {
                                 objectStore.putObject(objectStoreAccountName, documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key, new ByteArrayInputStream(reEncryptedBytes));
@@ -434,30 +435,19 @@ public class ReEncrypt {
                                 documentRepository.save(currentDocumentEntity);
                             }
                         }
-                    } catch (AmazonS3Exception | FSAdapterException | IOException e) {
-                        logger.info("Exception:- bucket not found");
-                        throw new AmazonS3Exception("bucket not found");
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.info("Exception:- bucket not found");
+                        throw new ObjectStoreAdapterException(OBJECT_STORE_NOT_ACCESSIBLE.getErrorCode(), OBJECT_STORE_NOT_ACCESSIBLE.getErrorMessage(), e);
                     }
                     logger.info("DocumentEntity:-" + documentEntity.getDocumentId());
                 }
+//                }
             }
         }
         logger.info("Number of rows fetched by object store:-" + objectStoreFoundCounter);
     }
 
-    private void createFolder(String objectStoreAccountName, String folderName, AmazonS3 connection) {
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(0);
-        // create empty content
-        InputStream emptyContent = new ByteArrayInputStream(new byte[0]);
-        // create a PutObjectRequest passing the folder name suffixed by /
-        PutObjectRequest putObjectRequest = new PutObjectRequest(objectStoreAccountName,
-                folderName + SUFFIX, emptyContent, metadata);
-        // send request to S3 to create folder
-        connection.putObject(putObjectRequest);
-    }
+
 
 
     private void reEncryptData(List<DemographicEntity> applicantDemographic) throws Exception {
