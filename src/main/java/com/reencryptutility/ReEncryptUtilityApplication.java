@@ -1,12 +1,11 @@
-package com.ReEncryptUtility.ReEncryptUtility;
+package com.reencryptutility;
 
-import com.ReEncryptUtility.ReEncryptUtility.service.ReEncrypt;
+import com.reencryptutility.service.ReEncrypt;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -14,7 +13,7 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
-@ComponentScan(basePackages={ "io.mosip.commons.khazana.*" ,"com.ReEncryptUtility.ReEncryptUtility.*"}, excludeFilters = {
+@ComponentScan(basePackages={ "io.mosip.commons.khazana.*" ,"com.reencryptutility.*"}, excludeFilters = {
         @ComponentScan.Filter(type = FilterType.ASPECTJ,
                 pattern = {
                         "io.mosip.commons.khazana.impl.PosixAdapter",

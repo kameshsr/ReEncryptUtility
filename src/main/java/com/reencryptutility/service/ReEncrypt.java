@@ -1,13 +1,13 @@
-package com.ReEncryptUtility.ReEncryptUtility.service;
+package com.reencryptutility.service;
 
-import com.ReEncryptUtility.ReEncryptUtility.dto.CryptoManagerRequestDTO;
-import com.ReEncryptUtility.ReEncryptUtility.dto.CryptoManagerResponseDTO;
-import com.ReEncryptUtility.ReEncryptUtility.dto.RequestWrapper;
-import com.ReEncryptUtility.ReEncryptUtility.dto.ResponseWrapper;
-import com.ReEncryptUtility.ReEncryptUtility.entity.DemographicEntity;
-import com.ReEncryptUtility.ReEncryptUtility.entity.DocumentEntity;
-import com.ReEncryptUtility.ReEncryptUtility.repository.DemographicRepository;
-import com.ReEncryptUtility.ReEncryptUtility.repository.DocumentRepository;
+import com.reencryptutility.dto.CryptoManagerRequestDTO;
+import com.reencryptutility.dto.CryptoManagerResponseDTO;
+import com.reencryptutility.dto.RequestWrapper;
+import com.reencryptutility.dto.ResponseWrapper;
+import com.reencryptutility.entity.DemographicEntity;
+import com.reencryptutility.entity.DocumentEntity;
+import com.reencryptutility.repository.DemographicRepository;
+import com.reencryptutility.repository.DocumentRepository;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;

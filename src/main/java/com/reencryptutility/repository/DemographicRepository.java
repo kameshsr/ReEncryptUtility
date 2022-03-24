@@ -1,6 +1,6 @@
-package com.ReEncryptUtility.ReEncryptUtility.repository;
+package com.reencryptutility.repository;
 
-import com.ReEncryptUtility.ReEncryptUtility.entity.DemographicEntity;
+import com.reencryptutility.entity.DemographicEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 

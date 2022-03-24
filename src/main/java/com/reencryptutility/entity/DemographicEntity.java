@@ -2,10 +2,9 @@
  * Copyright
  * 
  */
-package com.ReEncryptUtility.ReEncryptUtility.entity;
+package com.reencryptutility.entity;
 
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.NamedQuery;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
