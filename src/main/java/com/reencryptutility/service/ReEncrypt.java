@@ -33,6 +33,7 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -40,6 +41,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import static io.mosip.commons.khazana.constant.KhazanaErrorCodes.OBJECT_STORE_NOT_ACCESSIBLE;
 
 @Component
@@ -113,17 +115,11 @@ public class ReEncrypt {
 
     private int retry = 0;
     private AmazonS3 connection = null;
-
     private static final String SUFFIX = "/";
-
     String token = "";
-
     public int row;
-
     public int successFullRow;
-
     public List<DemographicEntity> demographicEntityList = new ArrayList<>();
-
     public List<DocumentEntity> documentEntityLists = new ArrayList<>();
 
     public ReEncrypt(ObjectMapper mapper, DemographicRepository reEncryptRepository) {
@@ -142,7 +138,6 @@ public class ReEncrypt {
                 ResponseWrapper.class);
         token = response.getHeaders().getFirst("authorization");
         restTemplate.setInterceptors(Collections.singletonList(new ClientHttpRequestInterceptor() {
-
             @Override
             public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
                     throws java.io.IOException {
@@ -221,9 +216,9 @@ public class ReEncrypt {
         reEncryptData(applicantDemographic);
         List<DocumentEntity> documentEntityList = documentRepository.findAll();
         reEncryptOldDocument(documentEntityList);
-        logger.info("size of list"+documentEntityLists.size());
-        if(isNewDatabase) {
-            InsertDataInNewDatabase();
+        logger.info("size of list" + documentEntityLists.size());
+        if (isNewDatabase) {
+            insertDataInNewDatabase();
         }
     }
 
@@ -246,46 +241,43 @@ public class ReEncrypt {
                 // reset the connection and retry count
                 retry = 0;
                 connection = null;
-                logger.error("Maximum retry limit exceeded. Could not obtain connection for "+ bucketName +". Retry count :" + retry, ExceptionUtils.getStackTrace(e));
+                logger.error("Maximum retry limit exceeded. Could not obtain connection for " + bucketName + ". Retry count :" + retry, ExceptionUtils.getStackTrace(e));
                 throw new ObjectStoreAdapterException(OBJECT_STORE_NOT_ACCESSIBLE.getErrorCode(), OBJECT_STORE_NOT_ACCESSIBLE.getErrorMessage(), e);
             } else {
                 connection = null;
                 retry = retry + 1;
-                logger.error("Exception occured while obtaining connection for "+ bucketName +". Will try again. Retry count : " + retry, ExceptionUtils.getStackTrace(e));
+                logger.error("Exception occured while obtaining connection for " + bucketName + ". Will try again. Retry count : " + retry, ExceptionUtils.getStackTrace(e));
                 getConnection(bucketName);
             }
         }
         return connection;
     }
 
-    private void InsertDataInNewDatabase() {
-        logger.info("sessionId", "idType", "id", "In InsertDataInNewDatabase method of CryptoUtil service ");
+    private void insertDataInNewDatabase() {
+        logger.info("sessionId", "idType", "id", "In insertDataInNewDatabase method of CryptoUtil service ");
         DatabaseThreadContext.setCurrentDatabase(Database.SECONDARY);
-        logger.info("size of list"+demographicEntityList.size());
-        logger.info("size of qa=upgrade"+demographicRepository.findAll().size());
+        logger.info("size of list" + demographicEntityList.size());
+        logger.info("size of qa=upgrade" + demographicRepository.findAll().size());
 
-       for(DemographicEntity demographicEntity : demographicEntityList) {
-           logger.info("demographicEntity prereg id : " + demographicEntity.getPreRegistrationId());
-           if(demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId()) == null) {
-               DemographicEntity demographicEntity1 = new DemographicEntity();
-               demographicEntity1.setPreRegistrationId(demographicEntity.getPreRegistrationId());
-               demographicEntity1.setDemogDetailHash(demographicEntity.getDemogDetailHash());
-               demographicEntity1.setEncryptedDateTime(demographicEntity.getEncryptedDateTime());
-               demographicEntity1.setApplicantDetailJson(demographicEntity.getApplicantDetailJson());
-               demographicEntity1.setStatusCode(demographicEntity.getStatusCode());
-               demographicEntity1.setLangCode(demographicEntity.getLangCode());
-               demographicEntity1.setCrAppuserId(demographicEntity.getCrAppuserId());
-               demographicEntity1.setCreatedBy(demographicEntity.getCreatedBy());
-               demographicEntity1.setCreateDateTime(demographicEntity.getCreateDateTime());
-               demographicEntity1.setUpdatedBy(demographicEntity.getUpdatedBy());
-               demographicEntity1.setUpdateDateTime(demographicEntity.getUpdateDateTime());
-               demographicRepository.save(demographicEntity1);
-           }
-       }
-        logger.info("size of list"+documentEntityLists.size());
+        for (DemographicEntity demographicEntity : demographicEntityList) {
+            if (demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId()) == null) {
+                DemographicEntity demographicEntity1 = new DemographicEntity();
+                demographicEntity1.setPreRegistrationId(demographicEntity.getPreRegistrationId());
+                demographicEntity1.setDemogDetailHash(demographicEntity.getDemogDetailHash());
+                demographicEntity1.setEncryptedDateTime(demographicEntity.getEncryptedDateTime());
+                demographicEntity1.setApplicantDetailJson(demographicEntity.getApplicantDetailJson());
+                demographicEntity1.setStatusCode(demographicEntity.getStatusCode());
+                demographicEntity1.setLangCode(demographicEntity.getLangCode());
+                demographicEntity1.setCrAppuserId(demographicEntity.getCrAppuserId());
+                demographicEntity1.setCreatedBy(demographicEntity.getCreatedBy());
+                demographicEntity1.setCreateDateTime(demographicEntity.getCreateDateTime());
+                demographicEntity1.setUpdatedBy(demographicEntity.getUpdatedBy());
+                demographicEntity1.setUpdateDateTime(demographicEntity.getUpdateDateTime());
+                demographicRepository.save(demographicEntity1);
+            }
+        }
+        logger.info("size of list" + documentEntityLists.size());
         for (DocumentEntity documentEntities : documentEntityLists) {
-            logger.info("pre-registration-id:-" + documentEntities.getDemographicEntity().getPreRegistrationId());
-            logger.info("inside document entity"+ documentEntities.getDocumentId());
             DocumentEntity documentEntity = new DocumentEntity();
             documentEntity.setDemographicEntity(documentEntities.getDemographicEntity());
             documentEntity.setDocId(documentEntities.getDocId());
@@ -309,9 +301,9 @@ public class ReEncrypt {
         DatabaseThreadContext.setCurrentDatabase(Database.PRIMARY);
     }
 
-    private void reEncryptOldDocument(List<DocumentEntity> documentEntityList)  {
-        logger.info("Total rows:-" + documentEntityList.size());
-        int objectStoreFoundCounter=0;
+    private void reEncryptOldDocument(List<DocumentEntity> documentEntityList) {
+        logger.info("Total rows in Document Entity:-" + documentEntityList.size());
+        int objectStoreFoundCounter = 0;
         for (DocumentEntity documentEntities : documentEntityList) {
             logger.info("pre-registration-id:-" + documentEntities.getDemographicEntity().getPreRegistrationId());
             documentEntityList = documentRepository.findByDemographicEntityPreRegistrationId(documentEntities.getDemographicEntity().getPreRegistrationId());
@@ -327,37 +319,31 @@ public class ReEncrypt {
                             continue;
                         }
                         logger.info("key  found in objectstore");
-                        InputStream sourcefile = objectStore.getObject(objectStoreAccountName,
+                        InputStream sourceFile = objectStore.getObject(objectStoreAccountName,
                                 documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key);
-                        logger.info("sourcefile" + sourcefile);
-                        if (sourcefile != null) {
+                        if (sourceFile != null) {
                             objectStoreFoundCounter++;
-                            logger.info("sourcefile not null");
-                            byte[] bytes = IOUtils.toByteArray(sourcefile);
-                            byte[] decryptedBytes =  decrypt(bytes, LocalDateTime.now(), decryptBaseUrl);
+                            logger.info("sourceFile not null");
+                            byte[] bytes = IOUtils.toByteArray(sourceFile);
+                            byte[] decryptedBytes = decrypt(bytes, LocalDateTime.now(), decryptBaseUrl);
                             if (decryptedBytes == null) {
                                 logger.info("decryptedBytes is null");
                                 continue;
                             }
                             byte[] reEncryptedBytes = encrypt(decryptedBytes, LocalDateTime.now(), encryptBaseUrl);
-                            logger.info("bytes:\n" + bytes);
-                            logger.info("decryptedBytes:\n" + decryptedBytes);
-                            logger.info("reEncryptedBytes:\n" + (reEncryptedBytes));
                             String folderName = documentEntity.getDemographicEntity().getPreRegistrationId();
-                            if(isNewDatabase) {
+                            if (isNewDatabase) {
                                 AmazonS3 connection = getConnection(folderName);
                                 if (!connection.doesBucketExistV2(folderName))
                                     connection.createBucket(folderName);
                                 connection.putObject(folderName, key, new ByteArrayInputStream(reEncryptedBytes), null);
                                 documentEntity.setDocHash(hashUtill(reEncryptedBytes));
                                 documentEntity.setEncryptedDateTime(LocalDateTime.now());
-                                logger.info("inside document entity"+ documentEntity.getDocumentId());
                                 documentEntityLists.add(documentEntity);
-                            }
-                            else {
+                            } else {
                                 objectStore.putObject(objectStoreAccountName, documentEntity.getDemographicEntity().getPreRegistrationId(), null, null, key, new ByteArrayInputStream(reEncryptedBytes));
                             }
-                            List<DocumentEntity> currentDocumentEntityList =  documentRepository.findByDemographicEntityPreRegistrationId(documentEntity.getDemographicEntity().getPreRegistrationId());
+                            List<DocumentEntity> currentDocumentEntityList = documentRepository.findByDemographicEntityPreRegistrationId(documentEntity.getDemographicEntity().getPreRegistrationId());
                             for (DocumentEntity currentDocumentEntity : currentDocumentEntityList) {
                                 currentDocumentEntity.setDocHash(hashUtill(reEncryptedBytes));
                                 currentDocumentEntity.setEncryptedDateTime(LocalDateTime.now());
@@ -369,7 +355,6 @@ public class ReEncrypt {
                         logger.info("Exception:- bucket not found");
                         throw new ObjectStoreAdapterException(OBJECT_STORE_NOT_ACCESSIBLE.getErrorCode(), OBJECT_STORE_NOT_ACCESSIBLE.getErrorMessage(), e);
                     }
-                    logger.info("DocumentEntity:-" + documentEntity.getDocumentId());
                 }
             }
         }
@@ -380,34 +365,30 @@ public class ReEncrypt {
         int count = 0;
         for (DemographicEntity demographicEntity : applicantDemographic) {
             logger.info("pre registration id: " + demographicEntity.getPreRegistrationId());
-            logger.info("encrypted : " + new String(demographicEntity.getApplicantDetailJson()));
             if (demographicEntity.getApplicantDetailJson() != null) {
                 byte[] decryptedBytes = decrypt(demographicEntity.getApplicantDetailJson(), LocalDateTime.now(), decryptBaseUrl);
-                if(decryptedBytes == null)
+                if (decryptedBytes == null)
                     continue;
                 count++;
-                logger.info("decrypted: " + new String(decryptedBytes));
-                byte[] ReEncrypted = encrypt(decryptedBytes, LocalDateTime.now(), encryptBaseUrl);
-                logger.info("ReEncrypted: " + new String(ReEncrypted));
-                if(isNewDatabase) {
+                byte[] reEncrypted = encrypt(decryptedBytes, LocalDateTime.now(), encryptBaseUrl);
+                if (isNewDatabase) {
                     logger.info("I am in new database");
-                    demographicEntity.setApplicantDetailJson(ReEncrypted);
+                    demographicEntity.setApplicantDetailJson(reEncrypted);
                     demographicEntity.setEncryptedDateTime(LocalDateTime.now());
-                    demographicEntity.setDemogDetailHash(hashUtill(ReEncrypted));
+                    demographicEntity.setDemogDetailHash(hashUtill(reEncrypted));
                     demographicEntityList.add(demographicEntity);
-                }
-                else {
+                } else {
                     logger.info("i am in else false condition");
                     DemographicEntity demographicEntity1 = demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId());
-                    demographicEntity1.setApplicantDetailJson(ReEncrypted);
+                    demographicEntity1.setApplicantDetailJson(reEncrypted);
                     demographicEntity1.setEncryptedDateTime(LocalDateTime.now());
-                    demographicEntity1.setDemogDetailHash(hashUtill(ReEncrypted));
+                    demographicEntity1.setDemogDetailHash(hashUtill(reEncrypted));
                     demographicRepository.save(demographicEntity1);
                 }
             }
         }
-        logger.info("Total rows "+ applicantDemographic.size());
-        logger.info("Total rows encrypted "+ count);
+        logger.info("Total rows " + applicantDemographic.size());
+        logger.info("Total rows encrypted " + count);
     }
 }
 
