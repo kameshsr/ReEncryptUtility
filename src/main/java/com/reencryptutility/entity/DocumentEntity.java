@@ -2,7 +2,7 @@
  * Copyright
  * 
  */
-package com.ReEncryptUtility.ReEncryptUtility.entity;
+package com.reencryptutility.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

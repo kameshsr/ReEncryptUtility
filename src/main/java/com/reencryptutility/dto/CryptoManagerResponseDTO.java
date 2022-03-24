@@ -1,4 +1,4 @@
-package com.ReEncryptUtility.ReEncryptUtility.dto;
+package com.reencryptutility.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

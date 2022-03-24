@@ -1,4 +1,4 @@
-package com.ReEncryptUtility.ReEncryptUtility.service;
+package com.reencryptutility.service;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;

@@ -1,4 +1,4 @@
-package com.ReEncryptUtility.ReEncryptUtility.service;
+package com.reencryptutility.service;
 
 public class DatabaseThreadContext {
 

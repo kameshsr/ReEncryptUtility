@@ -1,6 +1,6 @@
-package com.ReEncryptUtility.ReEncryptUtility.repository;
+package com.reencryptutility.repository;
 
-import com.ReEncryptUtility.ReEncryptUtility.entity.DocumentEntity;
+import com.reencryptutility.entity.DocumentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
