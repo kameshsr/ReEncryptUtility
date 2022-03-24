@@ -1,13 +1,5 @@
 package com.reencryptutility.service;
 
-import com.reencryptutility.dto.CryptoManagerRequestDTO;
-import com.reencryptutility.dto.CryptoManagerResponseDTO;
-import com.reencryptutility.dto.RequestWrapper;
-import com.reencryptutility.dto.ResponseWrapper;
-import com.reencryptutility.entity.DemographicEntity;
-import com.reencryptutility.entity.DocumentEntity;
-import com.reencryptutility.repository.DemographicRepository;
-import com.reencryptutility.repository.DocumentRepository;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -18,6 +10,14 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.util.IOUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.reencryptutility.dto.CryptoManagerRequestDTO;
+import com.reencryptutility.dto.CryptoManagerResponseDTO;
+import com.reencryptutility.dto.RequestWrapper;
+import com.reencryptutility.dto.ResponseWrapper;
+import com.reencryptutility.entity.DemographicEntity;
+import com.reencryptutility.entity.DocumentEntity;
+import com.reencryptutility.repository.DemographicRepository;
+import com.reencryptutility.repository.DocumentRepository;
 import io.mosip.commons.khazana.exception.ObjectStoreAdapterException;
 import io.mosip.commons.khazana.spi.ObjectStoreAdapter;
 import io.mosip.kernel.core.util.HMACUtils;
@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.http.client.ClientHttpRequestExecution;
@@ -34,7 +33,6 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -42,12 +40,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import static io.mosip.commons.khazana.constant.KhazanaErrorCodes.OBJECT_STORE_NOT_ACCESSIBLE;
 
-
 @Component
-@RefreshScope
 public class ReEncrypt {
 
     Logger logger = org.slf4j.LoggerFactory.getLogger(ReEncrypt.class);
@@ -85,45 +80,34 @@ public class ReEncrypt {
     @Autowired
     private DocumentRepository documentRepository;
 
-
     @Qualifier("S3Adapter")
     @Autowired
     private ObjectStoreAdapter objectStore;
 
     @Value("${mosip.kernel.objectstore.account-name}")
     private String objectStoreAccountName;
-
-    @Value("${isNewDatabase}")
-    private String isNewDatabase;
-
+    @Value("${isNewDatabase:true}")
+    private boolean isNewDatabase;
     @Value("${object.store.s3.accesskey:accesskey:accesskey}")
     private String accessKey;
     @Value("${object.store.s3.secretkey:secretkey:secretkey}")
     private String objectStoreSecretKey;
     @Value("${object.store.s3.url:null}")
     private String url;
-
     @Value("${destinationObjectStore.s3.url}")
     private String destinationObjectStoreUrl;
-
     @Value("${destinationObjectStore.s3.access-key}")
     private String destinationObjectStoreAccessKey;
-
     @Value("${destinationObjectStore.s3.secret-key}")
     private String destinationObjectStoreSecretKey;
-
     @Value("${destinationObjectStore.s3.region:null}")
     private String region;
-
     @Value("${destinationObjectStore.s3.readlimit:10000000}")
     private int readlimit;
-
     @Value("${destinationObjectStore.connection.max.retry:5}")
     private int maxRetry;
-
     @Value("${object.store.max.connection:20}")
     private int maxConnection;
-
     @Value("${object.store.s3.use.account.as.bucketname:false}")
     private boolean useAccountAsBucketname;
 
@@ -238,7 +222,7 @@ public class ReEncrypt {
         List<DocumentEntity> documentEntityList = documentRepository.findAll();
         reEncryptOldDocument(documentEntityList);
         logger.info("size of list"+documentEntityLists.size());
-        if(isNewDatabase.equalsIgnoreCase("true")) {
+        if(isNewDatabase) {
             InsertDataInNewDatabase();
         }
     }
@@ -360,7 +344,7 @@ public class ReEncrypt {
                             logger.info("decryptedBytes:\n" + decryptedBytes);
                             logger.info("reEncryptedBytes:\n" + (reEncryptedBytes));
                             String folderName = documentEntity.getDemographicEntity().getPreRegistrationId();
-                            if(isNewDatabase.equalsIgnoreCase("true")) {
+                            if(isNewDatabase) {
                                 AmazonS3 connection = getConnection(folderName);
                                 if (!connection.doesBucketExistV2(folderName))
                                     connection.createBucket(folderName);
@@ -405,7 +389,7 @@ public class ReEncrypt {
                 logger.info("decrypted: " + new String(decryptedBytes));
                 byte[] ReEncrypted = encrypt(decryptedBytes, LocalDateTime.now(), encryptBaseUrl);
                 logger.info("ReEncrypted: " + new String(ReEncrypted));
-                if(isNewDatabase.equalsIgnoreCase("true")) {
+                if(isNewDatabase) {
                     logger.info("I am in new database");
                     demographicEntity.setApplicantDetailJson(ReEncrypted);
                     demographicEntity.setEncryptedDateTime(LocalDateTime.now());
