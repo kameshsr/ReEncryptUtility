@@ -33,7 +33,6 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -261,19 +260,19 @@ public class ReEncrypt {
 
         for (DemographicEntity demographicEntity : demographicEntityList) {
             if (demographicRepository.findBypreRegistrationId(demographicEntity.getPreRegistrationId()) == null) {
-                DemographicEntity demographicEntity1 = new DemographicEntity();
-                demographicEntity1.setPreRegistrationId(demographicEntity.getPreRegistrationId());
-                demographicEntity1.setDemogDetailHash(demographicEntity.getDemogDetailHash());
-                demographicEntity1.setEncryptedDateTime(demographicEntity.getEncryptedDateTime());
-                demographicEntity1.setApplicantDetailJson(demographicEntity.getApplicantDetailJson());
-                demographicEntity1.setStatusCode(demographicEntity.getStatusCode());
-                demographicEntity1.setLangCode(demographicEntity.getLangCode());
-                demographicEntity1.setCrAppuserId(demographicEntity.getCrAppuserId());
-                demographicEntity1.setCreatedBy(demographicEntity.getCreatedBy());
-                demographicEntity1.setCreateDateTime(demographicEntity.getCreateDateTime());
-                demographicEntity1.setUpdatedBy(demographicEntity.getUpdatedBy());
-                demographicEntity1.setUpdateDateTime(demographicEntity.getUpdateDateTime());
-                demographicRepository.save(demographicEntity1);
+                DemographicEntity newDemographicEntity = new DemographicEntity();
+                newDemographicEntity.setPreRegistrationId(demographicEntity.getPreRegistrationId());
+                newDemographicEntity.setDemogDetailHash(demographicEntity.getDemogDetailHash());
+                newDemographicEntity.setEncryptedDateTime(demographicEntity.getEncryptedDateTime());
+                newDemographicEntity.setApplicantDetailJson(demographicEntity.getApplicantDetailJson());
+                newDemographicEntity.setStatusCode(demographicEntity.getStatusCode());
+                newDemographicEntity.setLangCode(demographicEntity.getLangCode());
+                newDemographicEntity.setCrAppuserId(demographicEntity.getCrAppuserId());
+                newDemographicEntity.setCreatedBy(demographicEntity.getCreatedBy());
+                newDemographicEntity.setCreateDateTime(demographicEntity.getCreateDateTime());
+                newDemographicEntity.setUpdatedBy(demographicEntity.getUpdatedBy());
+                newDemographicEntity.setUpdateDateTime(demographicEntity.getUpdateDateTime());
+                demographicRepository.save(newDemographicEntity);
             }
         }
         logger.info("size of list" + documentEntityLists.size());
