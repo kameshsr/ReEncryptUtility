@@ -43,14 +43,29 @@ import java.util.List;
 
 import static io.mosip.commons.khazana.constant.KhazanaErrorCodes.OBJECT_STORE_NOT_ACCESSIBLE;
 
+/**
+ * The Class ReEncrypt.
+ * service class for re-encrypting the documents
+ * @author Kamesh Shekhar Prasad
+ * @since 1.0.0
+ */
+
 @Component
 public class ReEncrypt {
 
     Logger logger = org.slf4j.LoggerFactory.getLogger(ReEncrypt.class);
 
+    /**
+     * restTemplate.
+     * The restTemplate to make http calls
+     */
     @Autowired
     RestTemplate restTemplate;
 
+    /**
+     * cryptoResourceUrl.
+     * The cryptoResourceUrl is the url of the key manager service which is used for decrypting the documents.
+     */
     @Value("${cryptoResource.url}")
     public String cryptoResourceUrl;
 
