@@ -96,20 +96,28 @@ public class ReEncrypt {
     @Autowired
     private DocumentRepository documentRepository;
 
+    /*
+     * The objectStoreAdapter is used to get the documents from the object store
+     */
     @Qualifier("S3Adapter")
     @Autowired
     private ObjectStoreAdapter objectStore;
 
-    @Value("${mosip.kernel.objectstore.account-name}")
-    private String objectStoreAccountName;
+    /**
+     * isNewDatabase variable is used to check if the database is new or not.
+     */
     @Value("${isNewDatabase:true}")
     private boolean isNewDatabase;
+
+    @Value("${mosip.kernel.objectstore.account-name}")
+    private String objectStoreAccountName;
     @Value("${object.store.s3.accesskey:accesskey:accesskey}")
     private String accessKey;
     @Value("${object.store.s3.secretkey:secretkey:secretkey}")
     private String objectStoreSecretKey;
     @Value("${object.store.s3.url:null}")
     private String url;
+
     @Value("${destinationObjectStore.s3.url}")
     private String destinationObjectStoreUrl;
     @Value("${destinationObjectStore.s3.access-key}")
@@ -117,6 +125,7 @@ public class ReEncrypt {
     @Value("${destinationObjectStore.s3.secret-key}")
     private String destinationObjectStoreSecretKey;
     @Value("${destinationObjectStore.s3.region:null}")
+
     private String region;
     @Value("${destinationObjectStore.s3.readlimit:10000000}")
     private int readlimit;
@@ -133,14 +142,24 @@ public class ReEncrypt {
     String token = "";
     public int row;
     public int successFullRow;
+
     public List<DemographicEntity> demographicEntityList = new ArrayList<>();
     public List<DocumentEntity> documentEntityLists = new ArrayList<>();
 
+    /**
+     *
+     * @param mapper
+     * @param reEncryptRepository
+     */
     public ReEncrypt(ObjectMapper mapper, DemographicRepository reEncryptRepository) {
         this.mapper = mapper;
         this.reEncryptRepository = reEncryptRepository;
     }
 
+    /**
+     * This method is used to generate token for the key manager service.
+     * @param url
+     */
     public void generateToken(String url) {
         RequestWrapper<ObjectNode> requestWrapper = new RequestWrapper<>();
         ObjectNode request = mapper.createObjectNode();
@@ -161,6 +180,14 @@ public class ReEncrypt {
         }));
     }
 
+    /**
+     * This method is used to decrypt the demographic data.
+     * @param originalInput
+     * @param localDateTime
+     * @param decryptBaseUrl
+     * @return
+     * @throws Exception
+     */
     public byte[] decrypt(byte[] originalInput, LocalDateTime localDateTime, String decryptBaseUrl) throws Exception {
         logger.info("In decrypt method of CryptoUtil service ");
         ResponseEntity<ResponseWrapper<CryptoManagerResponseDTO>> response = null;
@@ -189,6 +216,14 @@ public class ReEncrypt {
         return decodedBytes;
     }
 
+    /**
+     * This method is used to encrypt the demographic data.
+     * @param originalInput
+     * @param localDateTime
+     * @param encryptBaseUrl
+     * @return
+     * @throws Exception
+     */
     public byte[] encrypt(byte[] originalInput, LocalDateTime localDateTime, String encryptBaseUrl) {
         logger.info("sessionId", "idType", "id", "In encrypt method of CryptoUtil service ");
         generateToken(encryptBaseUrl);
@@ -218,10 +253,18 @@ public class ReEncrypt {
         return encryptedBytes;
     }
 
+    /**
+     * This method is used to generate hash value.
+     * @param bytes
+     * @return
+     */
     public static String hashUtill(byte[] bytes) {
         return HMACUtils.digestAsPlainText(HMACUtils.generateHash(bytes));
     }
 
+    /**
+     * This method is used as starting point for utility class.
+     */
     public void start() throws Exception {
         DatabaseThreadContext.setCurrentDatabase(Database.PRIMARY);
         logger.info("sessionId", "idType", "id", "In start method of CryptoUtil service ");
@@ -236,6 +279,11 @@ public class ReEncrypt {
         }
     }
 
+    /**
+     * This method creates connection to destination object store.
+     * @param bucketName
+     * @return
+     */
     private AmazonS3 getConnection(String bucketName) {
         if (connection != null)
             return connection;
@@ -267,8 +315,16 @@ public class ReEncrypt {
         return connection;
     }
 
+
+    /**
+     * This method will insert data in new database.
+     */
     private void insertDataInNewDatabase() {
         logger.info("sessionId", "idType", "id", "In insertDataInNewDatabase method of CryptoUtil service ");
+
+        /**
+         * Change the database to new database.
+         */
         DatabaseThreadContext.setCurrentDatabase(Database.SECONDARY);
         logger.info("size of list" + demographicEntityList.size());
         logger.info("size of qa=upgrade" + demographicRepository.findAll().size());
@@ -315,6 +371,10 @@ public class ReEncrypt {
         DatabaseThreadContext.setCurrentDatabase(Database.PRIMARY);
     }
 
+    /**
+     * This method will read data from object store re-encrypt and insert in same object store if isNewDatabase is false.
+     * @param documentEntityList
+     */
     private void reEncryptOldDocument(List<DocumentEntity> documentEntityList) {
         logger.info("Total rows in Document Entity:-" + documentEntityList.size());
         int objectStoreFoundCounter = 0;
@@ -375,6 +435,11 @@ public class ReEncrypt {
         logger.info("Number of rows fetched by object store:-" + objectStoreFoundCounter);
     }
 
+    /**
+     * This method will read the data from database re-encrypt and store in database.
+     * @param applicantDemographic
+     * @throws Exception
+     */
     private void reEncryptData(List<DemographicEntity> applicantDemographic) throws Exception {
         int count = 0;
         for (DemographicEntity demographicEntity : applicantDemographic) {
