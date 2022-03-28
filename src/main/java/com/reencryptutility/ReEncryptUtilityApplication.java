@@ -19,6 +19,11 @@ import org.springframework.web.client.RestTemplate;
                         "io.mosip.commons.khazana.impl.PosixAdapter",
                         "io.mosip.commons.khazana.util.*"
                 }) })
+
+/**
+ * The Class ReEncryptUtilityApplication.
+ * Main class for ReEncryptUtilityApplication
+ */
 public class ReEncryptUtilityApplication implements CommandLineRunner {
 
     Logger logger = org.slf4j.LoggerFactory.getLogger(ReEncryptUtilityApplication.class);
