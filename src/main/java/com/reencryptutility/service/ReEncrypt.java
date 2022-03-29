@@ -208,7 +208,6 @@ public class ReEncrypt {
             response = restTemplate.exchange(cryptoResourceUrl + "/decrypt", HttpMethod.POST, request,
                     new ParameterizedTypeReference<ResponseWrapper<CryptoManagerResponseDTO>>() {
                     });
-            logger.info("myresponse\n" + response.getBody().getResponse().getData().getBytes(StandardCharsets.UTF_8));
             decodedBytes = response.getBody().getResponse().getData().getBytes();
         } catch (Exception ex) {
             logger.error("Error in decrypt method of CryptoUtil service " + ex.getMessage());
