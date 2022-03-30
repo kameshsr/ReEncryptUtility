@@ -140,7 +140,7 @@ public class ReEncrypt {
     private AmazonS3 connection = null;
     private static final String SUFFIX = "/";
     String token = "";
-    public int row;
+
     public int successFullRow;
 
     public List<DemographicEntity> demographicEntityList = new ArrayList<>();
