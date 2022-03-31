@@ -141,8 +141,6 @@ public class ReEncrypt {
     private static final String SUFFIX = "/";
     String token = "";
 
-    public int successFullRow;
-
     public List<DemographicEntity> demographicEntityList = new ArrayList<>();
     public List<DocumentEntity> documentEntityLists = new ArrayList<>();
 
