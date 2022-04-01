@@ -88,9 +88,6 @@ public class ReEncrypt {
     private ObjectMapper mapper;
 
     @Autowired
-    private DemographicRepository reEncryptRepository;
-
-    @Autowired
     private DemographicRepository demographicRepository;
 
     @Autowired
@@ -147,11 +144,9 @@ public class ReEncrypt {
     /**
      *
      * @param mapper
-     * @param reEncryptRepository
      */
-    public ReEncrypt(ObjectMapper mapper, DemographicRepository reEncryptRepository) {
+    public ReEncrypt(ObjectMapper mapper) {
         this.mapper = mapper;
-        this.reEncryptRepository = reEncryptRepository;
     }
 
     /**
