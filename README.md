@@ -19,8 +19,8 @@ Now in the same environment 1.1.5 version of MOSIP has got upgraded but no new k
 It's just application upgrade. <br />
 For this scenario, the data will be decrypted with the upgraded version of MOSIP and re-encrypted with upgraded version of MOSIP. <br />
 
-## Functionality 
-Scenario 1- Reads the database and object store data from the old key and re-encrypts with the new key and store it in new database and object store.<br />
+## Functionality
+Scenario 1- Read the database and object store data from the old key and re-encrypts with the new key and store it in new database and object store.<br />
 Scenario 2- Reads the database and object store data from the upgraded version of MOSIP and re-encrypts with the upgraded version of MOSIP and store it in same database and object store. <br />
 
 ## Setup steps:
